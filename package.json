@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && npx nodemon ./server.ts",
-    "dist": "node dist/app.js",
+    "start": "nodemon server.ts",
+    "compile": "tsc && node dist/app.js",
     "lint": "eslint . --ext .ts"
   },
   "keywords": [],
