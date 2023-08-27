@@ -1,18 +1,33 @@
 import { Category } from "../models/categoryModel";
 
-export const getAllCategories = (request, response) => {
+export const getAllCategories = async (request, response) => {
+  try {
+    const categories = await Category.find();
+
+    response.status(200).json({
+      status: "success",
+      data: {
+        categories,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
+
   response.status(200).send("DSS");
 };
 
 export const createCategory = async (request, response) => {
-  const { body } = request;
-  console.log("Create category1");
+  try {
+    const newCategory = await Category.create(request.body);
 
-  const testCategory = new Category({
-    name: "Test",
-  });
-
-  const doc = await testCategory.save();
-
-  response.status(200).send(doc);
+    response.status(201).json({
+      status: "success",
+      data: {
+        category: newCategory,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
 };
