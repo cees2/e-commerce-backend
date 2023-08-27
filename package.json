@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && npx nodemon ./src/server.ts",
+    "start": "tsc && npx nodemon ./server.ts",
     "dist": "node dist/app.js",
     "lint": "eslint . --ext .ts"
   },
@@ -22,6 +22,7 @@
   "dependencies": {
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "mongoose": "^7.4.5",
     "morgan": "^1.10.0",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.1"
