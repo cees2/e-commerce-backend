@@ -1,12 +1,12 @@
 import express from "express";
+import morgan from "morgan";
+import { router as categoryRouter } from "./routes/categoryRoutes";
+import { router as productRouter } from "./routes/categoryRoutes";
+import { app } from "./server";
 
-const app = express();
-const port = 3000
+app.use(express.json());
 
-app.get("/", (req, res) => {
-    res.send("Hello world")
-})
+if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
 
-app.listen(port, () => {
-    return console.log(`Express is listening at http://localhost:${port}`)
-})
+app.use("/ajax/categories", categoryRouter);
+app.use("/ajax/products", productRouter);
