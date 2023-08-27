@@ -1,7 +1,6 @@
 import { Category } from "../models/categoryModel";
 
 export const getAllCategories = (request, response) => {
-  console.log("execcccc");
   response.status(200).send("DSS");
 };
 
