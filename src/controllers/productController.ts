@@ -11,7 +11,14 @@ export const createProduct = async (request, response) => {
   });
 };
 
-export const getAllProducts = (request, response) => {
-  console.log("EXEC");
-  response.status(200).send("DDD");
+export const getAllProducts = async (request, response) => {
+  const products = await Product.find();
+
+  return response.status(200).json({
+    message: "Success",
+    products: products.length,
+    data: {
+      products,
+    },
+  });
 };
