@@ -1,5 +1,5 @@
 export class AppError extends Error {
-  private message: string;
+  public message: string;
   private statusCode: number;
   private status: string;
   private isOperational: boolean;
@@ -7,9 +7,9 @@ export class AppError extends Error {
   constructor(message: string, statusCode: number) {
     super(message);
     this.statusCode = statusCode;
-    this.status = `${statusCode}`.startsWith(4) ? "fail" : "error";
+    this.status = statusCode.toString().startsWith("4") ? "fail" : "error";
     this.isOperational = true;
 
-    Error.captureStackTrace(this.this.constructor);
+    Error.captureStackTrace(this, this.constructor);
   }
 }
