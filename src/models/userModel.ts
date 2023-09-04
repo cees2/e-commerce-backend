@@ -14,7 +14,12 @@ const userSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     lowercase: true,
-    validate: [validator.isEmail, "Please provide a correct email"],
+    validate: {
+      validator: (email: string) => {
+        return IsEmail(email)
+      },
+      message: "Please provide correct email"
+    }
   },
   password: {
     type: String,
@@ -27,7 +32,7 @@ const userSchema = new mongoose.Schema({
     required: [true, "Please confirm your password"],
     validate: {
       validator: (passwordConfirm: string) => {
-        return passwordConfirm === this.password;
+        return passwordConfirm === this?.password;
       },
       message: "Provided passwords do not match",
     },
@@ -48,9 +53,9 @@ userSchema.pre("save", async (next) => {
 });
 
 userSchema.pre("save", async (next) => {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 12);
-  this.passwordConfirm = undefined;
+  if (!this || !this.isModified("password")) return next();
+  this!.password = await bcrypt.hash(this.password, 12);
+  this!.passwordConfirm = undefined;
   next();
 });
 

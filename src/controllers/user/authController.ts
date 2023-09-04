@@ -1,5 +1,6 @@
 import { User } from "../../models/userModel";
 import jwt from "jsonwebtoken";
+import { AppError } from "../../utls/AppError";
 
 export const signup = async (request, response, next) => {
   try {
@@ -23,6 +24,6 @@ export const signup = async (request, response, next) => {
       },
     });
   } catch (err) {
-    next(new AppError("Something went wrong"), 500);
+    next(new AppError("Something went wrong", 500));
   }
 };
