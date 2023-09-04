@@ -40,3 +40,18 @@ const userSchema = new mongoose.Schema({
   dateCreated: Date,
   passwordChangedAt: Date,
 });
+
+userSchema.pre("save", async (next) => {
+  this.name = `${this.name.slice(0, 1).toUpperCase()}${this.name.slice(1)}`;
+  this.dateCreated = new Date();
+  next();
+});
+
+userSchema.pre("save", async (next) => {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
+  next();
+});
+
+export const User = mongoose.model("User", userSchema);
