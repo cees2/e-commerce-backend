@@ -1,8 +1,13 @@
+import { Response, Request, NextFunction } from "express";
 import { User } from "../../models/userModel";
 import jwt from "jsonwebtoken";
 import { AppError } from "../../utls/AppError";
 
-export const signup = async (request, response, next) => {
+export const signup = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
   try {
     const { body } = request;
     const newUser = await User.create({
@@ -11,6 +16,9 @@ export const signup = async (request, response, next) => {
       password: body.password,
       passwordConfirm: body.passwordConfirm,
     });
+
+    if (!process.env.JWT_SECRET || !process.env.JWT_EXPIRES_IN)
+      throw new Error("Server internal problems");
 
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN,
@@ -23,7 +31,7 @@ export const signup = async (request, response, next) => {
         user: newUser,
       },
     });
-  } catch (err) {
-    next(new AppError("Something went wrong", 500));
+  } catch (err: any) {
+    next(new AppError(err.message || "Something went wrong", 500));
   }
 };

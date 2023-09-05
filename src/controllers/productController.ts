@@ -1,7 +1,12 @@
 import { Product } from "../models/productModel";
 import { AppError } from "../utls/AppError";
+import { Request, Response, NextFunction } from "express";
 
-export const createProduct = async (request, response, next) => {
+export const createProduct = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
   try {
     const { name, image, description, price } = request.body;
 
@@ -15,12 +20,16 @@ export const createProduct = async (request, response, next) => {
         product,
       },
     });
-  } catch (err) {
-    next(new AppError(err.message, 500));
+  } catch (err: any) {
+    next(new AppError(err?.message, 500));
   }
 };
 
-export const getProduct = async (request, response, next) => {
+export const getProduct = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
   try {
     const { productId } = request.params;
 
@@ -35,12 +44,16 @@ export const getProduct = async (request, response, next) => {
         product,
       },
     });
-  } catch (err) {
+  } catch (err: any) {
     next(new AppError(err.message, 500));
   }
 };
 
-export const getAllProducts = async (request, response, next) => {
+export const getAllProducts = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
   try {
     const products = await Product.find();
 
@@ -51,7 +64,7 @@ export const getAllProducts = async (request, response, next) => {
         products,
       },
     });
-  } catch (err) {
+  } catch (err: any) {
     next(new AppError(err.message, 500));
   }
 };

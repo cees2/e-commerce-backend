@@ -1,7 +1,18 @@
 import mongoose from "mongoose";
-import IsEmail from "isemail";
+import { validate } from "isemail";
+import bcrypt from "bcrypt";
 
-const userSchema = new mongoose.Schema({
+interface User extends Document {
+  name: string;
+  email: string;
+  password: string;
+  passwordConfirm?: string;
+  role: "user" | "admin";
+  dateCreated: Date;
+  passwordChangedAt: Date;
+}
+
+const userSchema = new mongoose.Schema<User>({
   name: {
     type: String,
     trim: true,
@@ -15,11 +26,12 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
     validate: {
-      validator: (email: string) => {
-        return IsEmail(email)
+      validator: function (email: string) {
+        console.log(this);
+        validate(email);
       },
-      message: "Please provide correct email"
-    }
+      message: "Please provide correct email",
+    },
   },
   password: {
     type: String,
@@ -31,8 +43,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please confirm your password"],
     validate: {
-      validator: (passwordConfirm: string) => {
-        return passwordConfirm === this?.password;
+      validator: function (passwordConfirm: string) {
+        return passwordConfirm === (this as User).password;
       },
       message: "Provided passwords do not match",
     },
@@ -46,16 +58,16 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
 });
 
-userSchema.pre("save", async (next) => {
+userSchema.pre("save", async function (next) {
   this.name = `${this.name.slice(0, 1).toUpperCase()}${this.name.slice(1)}`;
   this.dateCreated = new Date();
   next();
 });
 
-userSchema.pre("save", async (next) => {
-  if (!this || !this.isModified("password")) return next();
-  this!.password = await bcrypt.hash(this.password, 12);
-  this!.passwordConfirm = undefined;
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
   next();
 });
 
