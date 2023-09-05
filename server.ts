@@ -14,12 +14,12 @@ export const app = express();
 
 const DB = process.env.DATABASE?.replace(
   "<password>",
-  process.env.DATABASE_PASSWORD
+  process.env.DATABASE_PASSWORD as string
 );
 
 const port = process.env.PORT || 3001;
 
-mongoose.connect(DB).then(() => {
+mongoose.connect(DB || "").then(() => {
   console.log(`Successfully connected to DB`);
 });
 

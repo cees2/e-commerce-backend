@@ -25,7 +25,7 @@ const handleDBValidationError = (err) => {
   return new AppError(`Invalid input data: ${errors}`, 400);
 };
 
-const sendErrorForDevelopment = (err, response) => {
+const sendErrorForDevelopment = (err, response: Response) => {
   response.status(err.statusCode).json({
     status: err.status,
     error: err,
@@ -34,7 +34,7 @@ const sendErrorForDevelopment = (err, response) => {
   });
 };
 
-const sendErrorForProduction = (err, response) => {
+const sendErrorForProduction = (err, response: Response) => {
   if (err.isOperational) {
     response.status(err.statusCode).json({
       status: err.status,
@@ -50,15 +50,15 @@ const sendErrorForProduction = (err, response) => {
 
 export const globalErrorHandler = (
   error: Record<string, any>,
-  request,
-  response,
+  request: Request,
+  response: Response,
   next
 ) => {
   error.statusCode = err.statusCode || 500;
   error.status = err.status || "error";
 
   if (process.env.NODE_ENV === "development")
-    sendErrorForDevelopment(err, response);
+    sendErrorForDevelopment(err, response: Response);
   else if (process.env.NODE_ENV === "production") {
     let err = Object.assign(err);
 
@@ -68,7 +68,7 @@ export const globalErrorHandler = (
     if (err.name === "JsonWebTokenError") error = handleJWTError();
     if (err.name === "TokenExpiredError") error = handleJWTExpiredError();
 
-    sendErrorForProduction(err, response);
+    sendErrorForProduction(err, response: Response);
   }
 
   next();
