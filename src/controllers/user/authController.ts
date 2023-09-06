@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { Response, Request, NextFunction } from "express";
 import { User } from "../../models/userModel";
 import jwt from "jsonwebtoken";
@@ -30,6 +31,43 @@ export const signup = async (
       data: {
         user: newUser,
       },
+    });
+  } catch (err: any) {
+    next(new AppError(err.message || "Something went wrong", 500));
+  }
+};
+
+export const login = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, password } = request.body;
+
+    const user = await User.findOne({ email }).select("+password");
+    const passwordIsCorrect = await user?.comparePasswords(
+      password,
+      user?.password
+    );
+
+    const credentialsAreOk = !!user && passwordIsCorrect;
+
+    if (!credentialsAreOk)
+      next(
+        new AppError(
+          "Provided credentials are incorrect. Please try again",
+          401
+        )
+      );
+
+    const token = jwt.sign({ id: user!._id }, process.env.JWT_SECRET || "", {
+      expiresIn: process.env.JWT_EXPIRES_IN,
+    });
+
+    response.status(200).json({
+      status: "success",
+      token,
     });
   } catch (err: any) {
     next(new AppError(err.message || "Something went wrong", 500));
