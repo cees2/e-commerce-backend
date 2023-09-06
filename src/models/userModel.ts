@@ -10,6 +10,10 @@ interface User extends Document {
   role: "user" | "admin";
   dateCreated: Date;
   passwordChangedAt: Date;
+  comparePasswords: (
+    providedPassword: string,
+    passwordExtractedFromDatabase: string
+  ) => Promise<boolean>;
 }
 
 const userSchema = new mongoose.Schema<User>({
@@ -70,5 +74,12 @@ userSchema.pre("save", async function (next) {
   this.passwordConfirm = undefined;
   next();
 });
+
+userSchema.methods.comparePasswords = function (
+  providedPassword: string,
+  passwordExtractedFromDatabase: string
+) {
+  return bcrypt.compare(providedPassword, passwordExtractedFromDatabase);
+};
 
 export const User = mongoose.model("User", userSchema);
