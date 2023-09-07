@@ -58,7 +58,7 @@ export const globalErrorHandler = (
   error.status = err.status || "error";
 
   if (process.env.NODE_ENV === "development")
-    sendErrorForDevelopment(err, response: Response);
+    sendErrorForDevelopment(err, response);
   else if (process.env.NODE_ENV === "production") {
     let err = Object.assign(err);
 
@@ -68,7 +68,7 @@ export const globalErrorHandler = (
     if (err.name === "JsonWebTokenError") error = handleJWTError();
     if (err.name === "TokenExpiredError") error = handleJWTExpiredError();
 
-    sendErrorForProduction(err, response: Response);
+    sendErrorForProduction(err, response);
   }
 
   next();

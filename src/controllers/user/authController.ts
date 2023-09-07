@@ -3,6 +3,8 @@ import { Response, Request, NextFunction } from "express";
 import { User } from "../../models/userModel";
 import jwt from "jsonwebtoken";
 import { AppError } from "../../utls/AppError";
+import { signTokenAndSendResponse } from "./utils/authUtils";
+import { promisify } from "util";
 
 export const signup = async (
   request: Request,
@@ -18,19 +20,8 @@ export const signup = async (
       passwordConfirm: body.passwordConfirm,
     });
 
-    if (!process.env.JWT_SECRET || !process.env.JWT_EXPIRES_IN)
-      throw new Error("Server internal problems");
-
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-    });
-
-    response.status(201).json({
-      status: "success",
-      token,
-      data: {
-        user: newUser,
-      },
+    signTokenAndSendResponse(response, 201, newUser._id.toString(), {
+      user: newUser,
     });
   } catch (err: any) {
     next(new AppError(err.message || "Something went wrong", 500));
@@ -61,14 +52,42 @@ export const login = async (
         )
       );
 
-    const token = jwt.sign({ id: user!._id }, process.env.JWT_SECRET || "", {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-    });
+    signTokenAndSendResponse(response, 200, user?._id.toString() || "");
+  } catch (err: any) {
+    next(new AppError(err.message || "Something went wrong", 500));
+  }
+};
 
-    response.status(200).json({
-      status: "success",
-      token,
-    });
+export const protect = (
+  request: Request,
+  response: Response,
+  next: nextFunction
+) => {
+  try {
+    let token = "";
+    const { authorization } = request.headers;
+
+    if (authorization?.startsWith("Bearer"))
+      token = authorization.split(" ")[1];
+
+    if (!token)
+      return next(
+        new AppError("You are not logged in. Please log in again", 401)
+      );
+
+    const tokenDecoded = await promisify(
+      jwt.verify(token, process.env.JWT_SECRET)
+    );
+
+    const user = await User.findById(tokenDecoded.id);
+
+    if (!user)
+      return next(
+        new AppError("This user no longer exists. Please log in again", 401)
+      );
+
+    request.user = user;
+    next();
   } catch (err: any) {
     next(new AppError(err.message || "Something went wrong", 500));
   }
