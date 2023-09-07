@@ -3,6 +3,7 @@ import { Response, Request, NextFunction } from "express";
 import { User } from "../../models/userModel";
 import jwt from "jsonwebtoken";
 import { AppError } from "../../utls/AppError";
+import { signTokenAndSendResponse } from "./utils/authUtils";
 
 export const signup = async (
   request: Request,
@@ -18,19 +19,8 @@ export const signup = async (
       passwordConfirm: body.passwordConfirm,
     });
 
-    if (!process.env.JWT_SECRET || !process.env.JWT_EXPIRES_IN)
-      throw new Error("Server internal problems");
-
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-    });
-
-    response.status(201).json({
-      status: "success",
-      token,
-      data: {
-        user: newUser,
-      },
+    signTokenAndSendResponse(response, 201, newUser._id.toString(), {
+      user: newUser,
     });
   } catch (err: any) {
     next(new AppError(err.message || "Something went wrong", 500));
@@ -61,14 +51,7 @@ export const login = async (
         )
       );
 
-    const token = jwt.sign({ id: user!._id }, process.env.JWT_SECRET || "", {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-    });
-
-    response.status(200).json({
-      status: "success",
-      token,
-    });
+    signTokenAndSendResponse(response, 200, user?._id.toString() || "");
   } catch (err: any) {
     next(new AppError(err.message || "Something went wrong", 500));
   }
