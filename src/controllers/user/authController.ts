@@ -1,10 +1,13 @@
-import bcrypt from "bcrypt";
 import { Response, Request, NextFunction } from "express";
 import { User } from "../../models/userModel";
 import jwt from "jsonwebtoken";
 import { AppError } from "../../utls/AppError";
 import { signTokenAndSendResponse } from "./utils/authUtils";
-import { promisify } from "util";
+import { TokenDecoded } from "./services/types";
+
+interface RequestWithUser extends Request {
+  user?: Record<string, any>;
+}
 
 export const signup = async (
   request: Request,
@@ -58,10 +61,10 @@ export const login = async (
   }
 };
 
-export const protect = (
-  request: Request,
+export const protect = async (
+  request: RequestWithUser,
   response: Response,
-  next: nextFunction
+  next: NextFunction
 ) => {
   try {
     let token = "";
@@ -75,11 +78,12 @@ export const protect = (
         new AppError("You are not logged in. Please log in again", 401)
       );
 
-    const tokenDecoded = await promisify(
-      jwt.verify(token, process.env.JWT_SECRET)
-    );
+    const tokenDecoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || ""
+    ) as TokenDecoded;
 
-    const user = await User.findById(tokenDecoded.id);
+    const user = await User.findById(tokenDecoded?.id);
 
     if (!user)
       return next(
