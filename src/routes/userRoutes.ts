@@ -1,5 +1,5 @@
 import express from "express";
-import { signup, login } from "../controllers/user/authController";
+import { signup, login, restrictTo } from "../controllers/user/authController";
 import { getUser, protect } from "../controllers/user/userController";
 
 export const router = express.Router();
@@ -9,3 +9,4 @@ router.route("/login").post(login);
 
 router.use(protect);
 router.route("/:userId").get(getUser);
+// .delete(restrictTo("admin"), deleteUser);

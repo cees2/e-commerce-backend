@@ -96,3 +96,17 @@ export const protect = async (
     next(new AppError(err.message || "Something went wrong", 500));
   }
 };
+
+export const restrictTo =
+  (...roles) =>
+  (request: Request, response: Response, next: NextFunction) => {
+    if (!roles.includes(request.user.role)) {
+      return next(
+        new AppError(
+          "Sorry, You do not have permission to perform this action",
+          403
+        )
+      );
+    }
+    next();
+  };
