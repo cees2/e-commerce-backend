@@ -1,5 +1,5 @@
 import { Product } from "../models/productModel";
-import { AppError } from "../utls/AppError";
+import { AppError } from "../utils/AppError";
 import { Request, Response, NextFunction } from "express";
 
 export const createProduct = async (

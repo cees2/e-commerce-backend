@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { User } from "../../models/userModel";
-import { AppError } from "../../utls/AppError";
+import { AppError } from "../../utils/AppError";
 
 export const getUser = async (
   request: Request,
