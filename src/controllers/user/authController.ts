@@ -1,13 +1,9 @@
 import { Response, Request, NextFunction } from "express";
 import { User } from "../../models/userModel";
 import jwt from "jsonwebtoken";
-import { AppError } from "../../utls/AppError";
+import { AppError } from "../../utils/AppError";
 import { signTokenAndSendResponse } from "./utils/authUtils";
 import { TokenDecoded } from "./services/types";
-
-interface RequestWithUser extends Request {
-  user?: Record<string, any>;
-}
 
 export const signup = async (
   request: Request,
@@ -16,7 +12,7 @@ export const signup = async (
 ) => {
   try {
     const { body } = request;
-    const newUser = await User.create({
+    const newUser: Record<string, any> = await User.create({
       name: body.name,
       email: body.email,
       password: body.password,
@@ -39,7 +35,9 @@ export const login = async (
   try {
     const { email, password } = request.body;
 
-    const user = await User.findOne({ email }).select("+password");
+    const user: Record<string, any> = await User.findOne({ email }).select(
+      "+password"
+    );
     const passwordIsCorrect = await user?.comparePasswords(
       password,
       user?.password
@@ -62,7 +60,7 @@ export const login = async (
 };
 
 export const protect = async (
-  request: RequestWithUser,
+  request: Request,
   response: Response,
   next: NextFunction
 ) => {
@@ -96,3 +94,17 @@ export const protect = async (
     next(new AppError(err.message || "Something went wrong", 500));
   }
 };
+
+export const restrictTo =
+  (...roles: string[]) =>
+  (request: Request, response: Response, next: NextFunction) => {
+    if (!roles.includes(request.user.role)) {
+      return next(
+        new AppError(
+          "Sorry, You do not have permission to perform this action",
+          403
+        )
+      );
+    }
+    next();
+  };

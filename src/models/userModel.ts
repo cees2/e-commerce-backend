@@ -1,22 +1,9 @@
 import mongoose from "mongoose";
 import { validate } from "isemail";
 import bcrypt from "bcrypt";
+import { UserApi } from "../../types/express";
 
-interface User extends Document {
-  name: string;
-  email: string;
-  password: string;
-  passwordConfirm?: string;
-  role: "user" | "admin";
-  dateCreated: Date;
-  passwordChangedAt: Date;
-  comparePasswords: (
-    providedPassword: string,
-    passwordExtractedFromDatabase: string
-  ) => Promise<boolean>;
-}
-
-const userSchema = new mongoose.Schema<User>({
+const userSchema = new mongoose.Schema<UserApi>({
   name: {
     type: String,
     trim: true,
@@ -48,7 +35,7 @@ const userSchema = new mongoose.Schema<User>({
     required: [true, "Please confirm your password"],
     validate: {
       validator: function (passwordConfirm: string) {
-        return passwordConfirm === (this as User).password;
+        return passwordConfirm === (this as UserApi).password;
       },
       message: "Provided passwords do not match",
     },

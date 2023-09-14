@@ -3,7 +3,7 @@ import morgan from "morgan";
 import { router as productRouter } from "./routes/productRoutes";
 import { router as userRouter } from "./routes/userRoutes";
 import { app } from "../server";
-import { AppError } from "./utls/AppError";
+import { AppError } from "./utils/AppError";
 import { Request, Response, NextFunction } from "express";
 
 app.use(express.json());
