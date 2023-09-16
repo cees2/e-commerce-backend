@@ -10,8 +10,6 @@ export const getUser = async (
   try {
     const { userId } = request.params;
 
-    console.log(userId);
-
     const user = await User.findById(userId);
 
     if (!user) throw new Error("Could not find user with provided ID");
