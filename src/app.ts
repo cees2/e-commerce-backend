@@ -5,7 +5,9 @@ import { router as userRouter } from "./routes/userRoutes";
 import { app } from "../server";
 import { AppError } from "./utils/AppError";
 import { Request, Response, NextFunction } from "express";
+import cors from "cors";
 
+app.use(cors());
 app.use(express.json());
 
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));

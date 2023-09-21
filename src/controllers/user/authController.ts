@@ -108,3 +108,12 @@ export const restrictTo =
     }
     next();
   };
+
+export const getMe = (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  request.params.userId = request.user.id;
+  next();
+};
