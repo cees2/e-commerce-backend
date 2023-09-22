@@ -6,8 +6,10 @@ import { app } from "../server";
 import { AppError } from "./utils/AppError";
 import { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 app.use(cors());
+app.use(cookieParser());
 app.use(express.json());
 
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
