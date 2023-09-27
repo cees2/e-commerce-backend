@@ -1,3 +1,4 @@
+import { NextFunction, Response } from "express";
 import { AppError } from "../utils/AppError";
 
 const handleJWTError = () => {
@@ -8,24 +9,28 @@ const handleJWTExpiredError = () => {
   return new AppError(`Your token has expired. Please log in again`, 401);
 };
 
-const handleDBCastError = (err) => {
+const handleDBCastError = (err: Record<string, any>) => {
   return new AppError(`Invalid ${err.path}: ${err.value}`, 400);
 };
 
-const handleDBDuplicateFields = (err) => {
+const handleDBDuplicateFields = (err: Record<string, any>) => {
   return new AppError(
-    `Duplicate field value: ${err.keyValue.email}. Please use another value`
+    `Duplicate field value: ${err.keyValue.email}. Please use another value`,
+    400
   );
 };
 
-const handleDBValidationError = (err) => {
+const handleDBValidationError = (err: Record<string, any>) => {
   const errors = Object.values(err)
     .map((error) => error.message)
     .join(". ");
   return new AppError(`Invalid input data: ${errors}`, 400);
 };
 
-const sendErrorForDevelopment = (err, response: Response) => {
+const sendErrorForDevelopment = (
+  err: Record<string, any>,
+  response: Response
+) => {
   response.status(err.statusCode).json({
     status: err.status,
     error: err,
@@ -34,7 +39,10 @@ const sendErrorForDevelopment = (err, response: Response) => {
   });
 };
 
-const sendErrorForProduction = (err, response: Response) => {
+const sendErrorForProduction = (
+  err: Record<string, any>,
+  response: Response
+) => {
   if (err.isOperational) {
     response.status(err.statusCode).json({
       status: err.status,
@@ -52,15 +60,15 @@ export const globalErrorHandler = (
   error: Record<string, any>,
   request: Request,
   response: Response,
-  next
+  next: NextFunction
 ) => {
-  error.statusCode = err.statusCode || 500;
-  error.status = err.status || "error";
+  error.statusCode = error.statusCode || 500;
+  error.status = error.status || "error";
 
   if (process.env.NODE_ENV === "development")
-    sendErrorForDevelopment(err, response);
+    sendErrorForDevelopment(error, response);
   else if (process.env.NODE_ENV === "production") {
-    let err = Object.assign(err);
+    let err = Object.assign(error);
 
     if (err.name === "CastError") err = handleDBCastError(err);
     if (err.code === 11000) error = handleDBDuplicateFields(err);

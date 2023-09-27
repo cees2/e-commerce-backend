@@ -7,6 +7,7 @@ import { AppError } from "./utils/AppError";
 import { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { globalErrorHandler } from "./controllers/globalErrorHandler";
 
 app.use(cors());
 app.use(cookieParser());
@@ -20,3 +21,6 @@ app.use("/ajax/users", userRouter);
 app.all("*", (request: Request, response: Response, next: NextFunction) => {
   next(new AppError(`Cannot find ${request.originalUrl} on this server`, 404));
 });
+
+// @ts-ignore
+app.use(globalErrorHandler);
