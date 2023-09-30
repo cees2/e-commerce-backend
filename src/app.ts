@@ -22,5 +22,4 @@ app.all("*", (request: Request, response: Response, next: NextFunction) => {
   next(new AppError(`Cannot find ${request.originalUrl} on this server`, 404));
 });
 
-// @ts-ignore
 app.use(globalErrorHandler);

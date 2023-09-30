@@ -18,10 +18,9 @@ const userSchema = new mongoose.Schema<UserApi>({
     lowercase: true,
     validate: {
       validator: function (email: string) {
-        console.log(this);
         validate(email);
       },
-      message: "Please provide correct email",
+      message: "Incorrect email",
     },
   },
   password: {

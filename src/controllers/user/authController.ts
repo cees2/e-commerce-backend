@@ -23,7 +23,7 @@ export const signup = async (
       user: newUser,
     });
   } catch (err: any) {
-    next(new AppError(err.message || "Something went wrong", 500));
+    next(err);
   }
 };
 
@@ -55,7 +55,7 @@ export const login = async (
 
     signTokenAndSendResponse(response, 200, user?._id.toString() || "");
   } catch (err: any) {
-    next(new AppError(err.message || "Something went wrong", 500));
+    next(err);
   }
 };
 
@@ -91,7 +91,7 @@ export const protect = async (
     request.user = user;
     next();
   } catch (err: any) {
-    next(new AppError(err.message || "Something went wrong", 500));
+    next(err);
   }
 };
 
