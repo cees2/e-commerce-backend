@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { User } from "../../models/userModel";
-import { AppError } from "../../utils/AppError";
 
 export const getUser = async (
   request: Request,
@@ -21,6 +20,6 @@ export const getUser = async (
       },
     });
   } catch (err: any) {
-    next(new AppError(err.message || "Something went wrong", 500));
+    next(err);
   }
 };

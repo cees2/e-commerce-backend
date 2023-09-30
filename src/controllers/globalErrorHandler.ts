@@ -1,4 +1,4 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Response, Request } from "express";
 import { AppError } from "../utils/AppError";
 
 const handleJWTError = () => {
@@ -21,10 +21,17 @@ const handleDBDuplicateFields = (err: Record<string, any>) => {
 };
 
 const handleDBValidationError = (err: Record<string, any>) => {
-  const errors = Object.values(err)
-    .map((error) => error.message)
-    .join(". ");
-  return new AppError(`Invalid input data: ${errors}`, 400);
+  const errorObjectsAsArray = Object.values(err.errors as Record<string, any>);
+  const invalidFormFieldsValues = errorObjectsAsArray.map((errorObject) => ({
+    name: errorObject.path,
+    message: errorObject.message,
+  }));
+
+  return new AppError(
+    `Invalid input data. Please try again`,
+    400,
+    invalidFormFieldsValues
+  );
 };
 
 const sendErrorForDevelopment = (
@@ -44,10 +51,14 @@ const sendErrorForProduction = (
   response: Response
 ) => {
   if (err.isOperational) {
-    response.status(err.statusCode).json({
+    const responseBody: Record<string, any> = {
       status: err.status,
       message: err.message,
-    });
+    };
+
+    if (err.invalidFormFields) responseBody.errors = err.invalidFormFields;
+
+    response.status(err.statusCode).json(responseBody);
   } else {
     response.status(500).json({
       status: "Error",
@@ -71,10 +82,10 @@ export const globalErrorHandler = (
     let err = Object.assign(error);
 
     if (err.name === "CastError") err = handleDBCastError(err);
-    if (err.code === 11000) error = handleDBDuplicateFields(err);
-    if (err.name === "ValidationError") error = handleDBValidationError(err);
-    if (err.name === "JsonWebTokenError") error = handleJWTError();
-    if (err.name === "TokenExpiredError") error = handleJWTExpiredError();
+    if (err.code === 11000) err = handleDBDuplicateFields(err);
+    if (err.name === "ValidationError") err = handleDBValidationError(err);
+    if (err.name === "JsonWebTokenError") err = handleJWTError();
+    if (err.name === "TokenExpiredError") err = handleJWTExpiredError();
 
     sendErrorForProduction(err, response);
   }
