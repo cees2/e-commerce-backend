@@ -38,6 +38,7 @@ export const login = async (
     const user: Record<string, any> = await User.findOne({ email }).select(
       "+password"
     );
+
     const passwordIsCorrect = await user?.comparePasswords(
       password,
       user?.password
