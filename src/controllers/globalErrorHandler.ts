@@ -14,9 +14,19 @@ const handleDBCastError = (err: Record<string, any>) => {
 };
 
 const handleDBDuplicateFields = (err: Record<string, any>) => {
+  const invalidFormFieldsValues = Object.keys(err.keyPattern).map(
+    (duplicatedValue) => {
+      return {
+        name: duplicatedValue,
+        message: "Value already exists",
+      };
+    }
+  );
+
   return new AppError(
-    `Duplicate field value: ${err.keyValue.email}. Please use another value`,
-    400
+    `Duplicate field value. Please use another value`,
+    400,
+    invalidFormFieldsValues
   );
 };
 
