@@ -42,9 +42,14 @@ export const createProduct = async (
   next: NextFunction
 ) => {
   try {
-    const { name, image, description, price } = request.body;
+    const { name, description, price } = request.body;
 
-    const product = await Product.create({ name, image, description, price });
+    const product = await Product.create({
+      name,
+      image: request.file?.filename,
+      description,
+      price,
+    });
 
     if (!product) return next(new AppError("Could not create product", 409));
 
