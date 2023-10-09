@@ -3,6 +3,7 @@ import { AppError } from "../utils/AppError";
 import { Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { Express } from "express";
+import sharp from "sharp"
 
 const multerStorage = multer.diskStorage({
   destination: (request, file, cb) => {
@@ -34,6 +35,16 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
+export const resizeProductPhoto = (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  if (!request.file) return next();
+
+  sharp()
+};
+
 export const uploadProductPhoto = upload.single("image");
 
 export const createProduct = async (
@@ -42,9 +53,14 @@ export const createProduct = async (
   next: NextFunction
 ) => {
   try {
-    const { name, image, description, price } = request.body;
+    const { name, description, price } = request.body;
 
-    const product = await Product.create({ name, image, description, price });
+    const product = await Product.create({
+      name,
+      image: request.file?.filename,
+      description,
+      price,
+    });
 
     if (!product) return next(new AppError("Could not create product", 409));
 
