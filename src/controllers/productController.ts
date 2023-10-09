@@ -3,6 +3,7 @@ import { AppError } from "../utils/AppError";
 import { Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { Express } from "express";
+import sharp from "sharp"
 
 const multerStorage = multer.diskStorage({
   destination: (request, file, cb) => {
@@ -33,6 +34,16 @@ const upload = multer({
   storage: multerStorage,
   fileFilter: multerFilter,
 });
+
+export const resizeProductPhoto = (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  if (!request.file) return next();
+
+  sharp()
+};
 
 export const uploadProductPhoto = upload.single("image");
 
