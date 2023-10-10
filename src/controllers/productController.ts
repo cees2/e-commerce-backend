@@ -47,7 +47,7 @@ export const resizeProductPhoto = (
   request.file.filename = `product-${request.user.id}-${Date.now()}.jpeg`;
 
   sharp(request.file.buffer)
-    .resize(800, 500)
+    .resize(500, 500)
     .toFormat("jpeg")
     .jpeg({ quality: 90 })
     .toFile(`public/img/products/${request.file.filename}`);
