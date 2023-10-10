@@ -3,17 +3,19 @@ import { AppError } from "../utils/AppError";
 import { Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { Express } from "express";
-import sharp from "sharp"
+import sharp from "sharp";
 
-const multerStorage = multer.diskStorage({
-  destination: (request, file, cb) => {
-    cb(null, "public/img/products");
-  },
-  filename: (request, file, cb) => {
-    const extension = file.mimetype.split("/")[1];
-    cb(null, `product-${request.user.id}-${Date.now()}.${extension}`);
-  },
-});
+// const multerStorage = multer.diskStorage({
+//   destination: (request, file, cb) => {
+//     cb(null, "public/img/products");
+//   },
+//   filename: (request, file, cb) => {
+//     const extension = file.mimetype.split("/")[1];
+//     cb(null, `product-${request.user.id}-${Date.now()}.${extension}`);
+//   },
+// });
+
+const multerStorage = multer.memoryStorage();
 
 const multerFilter = (
   request: Request,
@@ -42,7 +44,15 @@ export const resizeProductPhoto = (
 ) => {
   if (!request.file) return next();
 
-  sharp()
+  request.file.filename = `product-${request.user.id}-${Date.now()}.jpeg`;
+
+  sharp(request.file.buffer)
+    .resize(800, 500)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/products/${request.file.filename}`);
+
+  next();
 };
 
 export const uploadProductPhoto = upload.single("image");
