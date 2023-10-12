@@ -2,7 +2,7 @@ import express from "express";
 import {
   getAllProducts,
   createProduct,
-  resizeProductPhoto,
+  resizeProductPhotos,
 } from "../controllers/productController";
 import { protect } from "../controllers/user/authController";
 import { uploadProductPhoto } from "../controllers/productController";
@@ -12,4 +12,4 @@ export const router = express.Router();
 router
   .route("/")
   .get(getAllProducts)
-  .post(protect, uploadProductPhoto, resizeProductPhoto, createProduct);
+  .post(protect, uploadProductPhoto, resizeProductPhotos, createProduct);

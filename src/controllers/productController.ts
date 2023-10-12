@@ -37,20 +37,50 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-export const resizeProductPhoto = (
+export const resizeProductPhotos = async (
   request: Request,
   response: Response,
   next: NextFunction
 ) => {
-  if (!request.file) return next();
+  try {
+    // 1) miniaturka
 
-  request.file.filename = `product-${request.user.id}-${Date.now()}.jpeg`;
+    if (!request.files?.images) return next();
 
-  sharp(request.file.buffer)
-    .resize(800, 500)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`public/img/products/${request.file.filename}`);
+    const productThumbnailImageFilename = `product-${request.params.id}-thumbnail.jpeg`;
+
+    await sharp(request.files.images[0].buffer)
+      .resize(1200, 800)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(`public/img/products/${productThumbnailImageFilename}`);
+
+    request.body.thumbnailPicture = productThumbnailImageFilename;
+
+    // 2) reszta zdjec
+
+    request.body.images = [];
+
+    const imagePromises = request.files.images.map(async (file, index) => {
+      const filename = `product-${request.params.id}-${index + 1}.jpeg`;
+
+      try {
+        await sharp(file.buffer)
+          .resize(1200, 800)
+          .toFormat("jpeg")
+          .jpeg({ quality: 90 })
+          .toFile(`public/img/products/${filename}`);
+
+        request.body.images.push(filename);
+      } catch (err: any) {
+        next(new AppError("Server internal error", 500));
+      }
+    });
+
+    await Promise.all(imagePromises);
+  } catch (err: any) {
+    next(new AppError(err.message || "Server internal error", 500));
+  }
 
   next();
 };
