@@ -12,4 +12,4 @@ export const router = express.Router();
 router
   .route("/")
   .get(getAllProducts)
-  .post(protect, uploadProductPhoto, resizeProductPhotos, createProduct);
+  .post(protect, resizeProductPhotos, uploadProductPhoto, createProduct);

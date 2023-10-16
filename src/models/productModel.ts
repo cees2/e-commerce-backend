@@ -8,7 +8,11 @@ const productSchema = new mongoose.Schema({
     trim: true,
     minLength: 2,
   },
-  image: {
+  thumbnail_image: {
+    type: String,
+    default: "default_product.jpg",
+  },
+  images: {
     type: String,
     default: "default_product.jpg",
   },
