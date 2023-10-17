@@ -44,12 +44,12 @@ export const resizeProductPhotos = async (
 ) => {
   try {
     // 1) miniaturka
-
-    if (!request.files?.images) return next();
+    const files = request.files as Record<string, any>;
+    if (!files?.images) return next();
 
     const productThumbnailImageFilename = `product-${request.params.id}-thumbnail.jpeg`;
 
-    await sharp(request.files.images[0].buffer)
+    await sharp(files?.images[0].buffer)
       .resize(1200, 800)
       .toFormat("jpeg")
       .jpeg({ quality: 90 })
@@ -61,21 +61,23 @@ export const resizeProductPhotos = async (
 
     request.body.images = [];
 
-    const imagePromises = request.files.images.map(async (file, index) => {
-      const filename = `product-${request.params.id}-${index + 1}.jpeg`;
+    const imagePromises = files?.images.map(
+      async (file: Record<string, any>, index: number) => {
+        const filename = `product-${request.params.id}-${index + 1}.jpeg`;
 
-      try {
-        await sharp(file.buffer)
-          .resize(1200, 800)
-          .toFormat("jpeg")
-          .jpeg({ quality: 90 })
-          .toFile(`public/img/products/${filename}`);
+        try {
+          await sharp(file.buffer)
+            .resize(1200, 800)
+            .toFormat("jpeg")
+            .jpeg({ quality: 90 })
+            .toFile(`public/img/products/${filename}`);
 
-        request.body.images.push(filename);
-      } catch (err: any) {
-        next(new AppError("Server internal error", 500));
+          request.body.images.push(filename);
+        } catch (err: any) {
+          next(new AppError("Server internal error", 500));
+        }
       }
-    });
+    );
 
     await Promise.all(imagePromises);
   } catch (err: any) {
