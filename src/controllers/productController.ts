@@ -44,8 +44,8 @@ export const resizeProductPhotos = async (
 ) => {
   try {
     // 1) miniaturka
-    const files = request.files as Record<string, any>;
-    if (!files?.images) return next();
+    const { files } = request as Record<string, any>;
+    if (files.images?.length === 0) return next();
 
     const productThumbnailImageFilename = `product-${request.params.id}-thumbnail.jpeg`;
 
@@ -87,7 +87,12 @@ export const resizeProductPhotos = async (
   next();
 };
 
-export const uploadProductPhoto = upload.single("image");
+export const uploadProductPhoto = upload.fields([
+  {
+    name: "images",
+    maxCount: 7,
+  },
+]);
 
 export const createProduct = async (
   request: Request,
@@ -99,7 +104,8 @@ export const createProduct = async (
 
     const product = await Product.create({
       name,
-      image: request.file?.filename,
+      images: request.body.images,
+      thumbnail_image: request.body.thumbnailPicture,
       description,
       price,
     });
