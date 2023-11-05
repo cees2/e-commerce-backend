@@ -4,6 +4,8 @@ import { Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { Express } from "express";
 import sharp from "sharp";
+import fsPromises from "fs/promises";
+import path from "path";
 
 // const multerStorage = multer.diskStorage({
 //   destination: (request, file, cb) => {
@@ -47,7 +49,9 @@ export const resizeProductPhotos = async (
     const { files } = request as Record<string, any>;
     if (files.images?.length === 0) return next();
 
-    const productThumbnailImageFilename = `product-${request.params.id}-thumbnail.jpeg`;
+    const productThumbnailImageFilename = `product-${
+      request.user.id
+    }-${Date.now()}-thumbnail.jpeg`;
 
     await sharp(files?.images[0].buffer)
       .resize(1200, 800)
@@ -63,7 +67,9 @@ export const resizeProductPhotos = async (
 
     const imagePromises = files?.images.map(
       async (file: Record<string, any>, index: number) => {
-        const filename = `product-${request.params.id}-${index + 1}.jpeg`;
+        const filename = `product-${request.user.id}-${Date.now()}-${
+          index + 1
+        }.jpeg`;
 
         try {
           await sharp(file.buffer)
@@ -131,16 +137,34 @@ export const getProduct = async (
   try {
     const { productId } = request.params;
 
-    const product = await Product.findOne({ id: productId });
+    const product = await Product.findById(productId);
 
     if (!product)
       return next(new AppError("Could not find product with given id", 404));
 
-    return response.status(200).json({
-      message: "Success",
-      data: {
-        product,
+    const pathname = path.resolve(__dirname, "../../public/img/products");
+
+    const productImagesPromises = product.images.map((imageName) => {
+      return fsPromises.readFile(`${pathname}/${imageName}`);
+    });
+
+    const productImages = await Promise.all(productImagesPromises);
+
+    const responseBody = {
+      data: { ...product },
+      file: {
+        mimeType: "image/jpeg",
+        data: productImages,
       },
+    };
+
+    response.setHeader("Content-Type", "image/jpeg");
+
+    console.log(responseBody);
+
+    return response.status(200).end({
+      message: "Success",
+      data: responseBody,
     });
   } catch (err: any) {
     next(new AppError(err.message, 500));

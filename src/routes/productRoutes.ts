@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getAllProducts,
+  getProduct,
   createProduct,
   resizeProductPhotos,
 } from "../controllers/productController";
@@ -13,3 +14,5 @@ router
   .route("/")
   .get(getAllProducts)
   .post(protect, uploadProductPhoto, resizeProductPhotos, createProduct);
+
+router.route("/:productId").get(getProduct);
