@@ -6,6 +6,7 @@ import { Express } from "express";
 import sharp from "sharp";
 import fsPromises from "fs/promises";
 import path from "path";
+import axios from "axios";
 
 // const multerStorage = multer.diskStorage({
 //   destination: (request, file, cb) => {
@@ -17,6 +18,7 @@ import path from "path";
 //   },
 // });
 
+const googleApiURL = "https://photoslibrary.googleapis.com";
 const multerStorage = multer.memoryStorage();
 
 const multerFilter = (
@@ -39,6 +41,22 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
+const createGoogleApiAlbum = (name: string) => {
+  return axios.post(
+    `${googleApiURL}/v1/albums`,
+    JSON.stringify({
+      album: {
+        title: name,
+      },
+    }),
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.GOOGLE_CREATE_ALBUM_TOKEN}`,
+      },
+    }
+  );
+};
+
 export const resizeProductPhotos = async (
   request: Request,
   response: Response,
@@ -56,8 +74,7 @@ export const resizeProductPhotos = async (
     await sharp(files?.images[0].buffer)
       .resize(1200, 800)
       .toFormat("jpeg")
-      .jpeg({ quality: 90 })
-      .toFile(`public/img/products/${productThumbnailImageFilename}`);
+      .jpeg({ quality: 90 });
 
     request.body.thumbnailPicture = productThumbnailImageFilename;
 
@@ -75,8 +92,7 @@ export const resizeProductPhotos = async (
           await sharp(file.buffer)
             .resize(1200, 800)
             .toFormat("jpeg")
-            .jpeg({ quality: 90 })
-            .toFile(`public/img/products/${filename}`);
+            .jpeg({ quality: 90 });
 
           request.body.images.push(filename);
         } catch (err: any) {
@@ -93,7 +109,7 @@ export const resizeProductPhotos = async (
   next();
 };
 
-export const uploadProductPhoto = upload.fields([
+export const assignImagesToRequests = upload.fields([
   {
     name: "images",
     maxCount: 7,
@@ -126,6 +142,28 @@ export const createProduct = async (
     });
   } catch (err: any) {
     next(new AppError(err?.message, 500));
+  }
+};
+
+export const uploadImages = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { name } = request.body;
+    const { files } = request as Record<string, any>;
+
+    try {
+      const res = await createGoogleApiAlbum(name);
+      console.log(res);
+    } catch (err) {
+      console.log("ERR", err);
+    }
+
+    next();
+  } catch (err: any) {
+    console.log("ERR:", err);
   }
 };
 

@@ -4,15 +4,22 @@ import {
   getProduct,
   createProduct,
   resizeProductPhotos,
+  uploadImages,
 } from "../controllers/productController";
 import { protect } from "../controllers/user/authController";
-import { uploadProductPhoto } from "../controllers/productController";
+import { assignImagesToRequests } from "../controllers/productController";
 
 export const router = express.Router();
 
 router
   .route("/")
   .get(getAllProducts)
-  .post(protect, uploadProductPhoto, resizeProductPhotos, createProduct);
+  .post(
+    protect,
+    assignImagesToRequests,
+    resizeProductPhotos,
+    uploadImages,
+    createProduct
+  );
 
 router.route("/:productId").get(getProduct);
