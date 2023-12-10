@@ -1,24 +1,17 @@
-import { Product } from "../models/productModel";
-import { AppError } from "../utils/AppError";
+import { Product } from "../../models/productModel";
+import { AppError } from "../../utils/AppError";
 import { Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { Express } from "express";
 import sharp from "sharp";
 import fsPromises from "fs/promises";
 import path from "path";
-import axios from "axios";
+import {
+  createGoogleApiAlbum,
+  createMultimedia,
+  getMultimediaToken,
+} from "./api/api";
 
-// const multerStorage = multer.diskStorage({
-//   destination: (request, file, cb) => {
-//     cb(null, "public/img/products");
-//   },
-//   filename: (request, file, cb) => {
-//     const extension = file.mimetype.split("/")[1];
-//     cb(null, `product-${request.user.id}-${Date.now()}.${extension}`);
-//   },
-// });
-
-const googleApiURL = "https://photoslibrary.googleapis.com";
 const multerStorage = multer.memoryStorage();
 
 const multerFilter = (
@@ -41,29 +34,12 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-const createGoogleApiAlbum = (name: string) => {
-  return axios.post(
-    `${googleApiURL}/v1/albums`,
-    JSON.stringify({
-      album: {
-        title: name,
-      },
-    }),
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.GOOGLE_CREATE_ALBUM_TOKEN}`,
-      },
-    }
-  );
-};
-
 export const resizeProductPhotos = async (
   request: Request,
   response: Response,
   next: NextFunction
 ) => {
   try {
-    // 1) miniaturka
     const { files } = request as Record<string, any>;
     if (files.images?.length === 0) return next();
 
@@ -77,8 +53,6 @@ export const resizeProductPhotos = async (
       .jpeg({ quality: 90 });
 
     request.body.thumbnailPicture = productThumbnailImageFilename;
-
-    // 2) reszta zdjec
 
     request.body.images = [];
 
@@ -150,21 +124,28 @@ export const uploadImages = async (
   response: Response,
   next: NextFunction
 ) => {
+  const { name } = request.body;
+  const { files } = request as Record<string, any>;
+
   try {
-    const { name } = request.body;
-    const { files } = request as Record<string, any>;
-
-    try {
-      const res = await createGoogleApiAlbum(name);
-      console.log(res);
-    } catch (err) {
-      console.log("ERR", err);
-    }
-
-    next();
+    const createdNewAlbum = await createGoogleApiAlbum(name);
+    console.log(createdNewAlbum);
+    const {
+      data: { id: albumId },
+    } = createdNewAlbum;
+    console.log("============");
+    console.log("UTWORZONO ALBUM");
+    const { data: multimediaToken } = await getMultimediaToken(files);
+    console.log("POBRANO TOKEN MULTIMEDIOW");
+    const a = await createMultimedia(multimediaToken, albumId);
+    console.log("DODANO MULTIMEDIA");
+    console.log("TUTAJ", a.data.status);
   } catch (err: any) {
-    console.log("ERR:", err);
+    console.log("ERR", err.response.data.error);
+    next(new AppError(err.message, 500));
   }
+
+  next();
 };
 
 export const getProduct = async (
@@ -197,8 +178,6 @@ export const getProduct = async (
     };
 
     response.setHeader("Content-Type", "image/jpeg");
-
-    console.log(responseBody);
 
     return response.status(200).end({
       message: "Success",

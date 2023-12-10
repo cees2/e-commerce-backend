@@ -5,9 +5,9 @@ import {
   createProduct,
   resizeProductPhotos,
   uploadImages,
-} from "../controllers/productController";
+} from "../controllers/product/productController";
 import { protect } from "../controllers/user/authController";
-import { assignImagesToRequests } from "../controllers/productController";
+import { assignImagesToRequests } from "../controllers/product/productController";
 
 export const router = express.Router();
 
