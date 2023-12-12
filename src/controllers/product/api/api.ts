@@ -1,4 +1,5 @@
 import axios from "axios";
+import FormData from "form-data"
 
 const googleApiURL = "https://photoslibrary.googleapis.com";
 
@@ -23,7 +24,16 @@ export const createGoogleApiAlbum = (
 export const getMultimediaToken = (
   multimedia: File[] | File
 ): Promise<Record<string, any>> => {
-  return axios.post(`${googleApiURL}/v1/uploads`, multimedia, {
+  const filesAsFormData = new FormData();
+
+  if (Array.isArray(multimedia)) {
+    multimedia.forEach((singleMultimedia, index) => {
+      filesAsFormData.append(index.toString(), JSON.stringify(singleMultimedia));
+    });
+  } else {
+    filesAsFormData.append("krzeslo", JSON.stringify(multimedia));
+  }
+  return axios.post(`${googleApiURL}/v1/uploads`, filesAsFormData, {
     headers: {
       Authorization: `Bearer ${process.env.GOOGLE_CREATE_MULTIMEDIA_TOKEN}`,
       "Conent-Type": "application/octet-stream",

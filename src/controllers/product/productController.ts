@@ -135,11 +135,11 @@ export const uploadImages = async (
     } = createdNewAlbum;
     console.log("============");
     console.log("UTWORZONO ALBUM");
-    const { data: multimediaToken } = await getMultimediaToken(files);
+    const { data: multimediaToken } = await getMultimediaToken(files.images);
     console.log("POBRANO TOKEN MULTIMEDIOW");
     const a = await createMultimedia(multimediaToken, albumId);
     console.log("DODANO MULTIMEDIA");
-    console.log("TUTAJ", a.data.status);
+    console.log("TUTAJ", a.data.newMediaItemResults);
   } catch (err: any) {
     console.log("ERR", err.response.data.error);
     next(new AppError(err.message, 500));
