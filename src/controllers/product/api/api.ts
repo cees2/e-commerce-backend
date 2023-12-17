@@ -22,30 +22,11 @@ export const createGoogleApiAlbum = (
 };
 
 export const getMultimediaToken = (
-  // multimedia: File[] | File
-  multimedia: File[]
+  buffer: string
 ): Promise<Record<string, any>> => {
-  // const filesAsFormData = new FormData();
-
-  // if (Array.isArray(multimedia)) {
-  //   multimedia.forEach((singleMultimedia, index) => {
-  //     // const multimediaDotExtensionIndex =
-  //     //   singleMultimedia.originalname.lastIndexOf(".");
-  //     // const multimediaName = singleMultimedia.originalname.substring(
-  //     //   0,
-  //     //   multimediaDotExtensionIndex
-  //     // );
-
-  //     filesAsFormData.append(`file-${index}`, JSON.stringify(singleMultimedia));
-  //   });
-  // } else {
-  //   filesAsFormData.append("krzeslo", JSON.stringify(multimedia));
-  // }
-  console.log(multimedia[0]);
   return axios.post(
     `${googleApiURL}/v1/uploads`,
-    //@ts-ignore
-    multimedia[0].buffer,
+    buffer,
     {
       headers: {
         Authorization: `Bearer ${process.env.GOOGLE_CREATE_MULTIMEDIA_TOKEN}`,

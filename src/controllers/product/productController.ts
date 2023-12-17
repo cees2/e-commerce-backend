@@ -132,11 +132,44 @@ export const uploadImages = async (
     const {
       data: { id: albumId },
     } = createdNewAlbum;
-    const { data: multimediaToken } = await getMultimediaToken(files.images);
-    const a = await createMultimedia(multimediaToken, albumId);
-    console.log("A", a.data.newMediaItemResults);
+
+    // Pobieranie tokenow multimediow - do stworzenia nowe middleware
+    const buffers = [];
+
+    if (Array.isArray(files.images)) {
+      files.images.forEach((singleFile: Record<string, any>) => {
+        buffers.push(singleFile.buffer);
+      });
+    } else {
+      buffers.push(files.images.buffer);
+    }
+
+    const multimediaTokensPromises = buffers.map((buffer) => {
+      return getMultimediaToken(buffer);
+    });
+
+    let multimediaTokens: Record<string, any> | string[] = await Promise.all(
+      multimediaTokensPromises
+    );
+    multimediaTokens = multimediaTokens.map(
+      (multimediaTokenObj: Record<string, any>) => {
+        return multimediaTokenObj.data;
+      }
+    );
+
+    // TWORZENIE MULTIMEDIOW
+
+    const createMultimediaPromises = multimediaTokens.map(
+      (multimediaToken: string) => {
+        return createMultimedia(multimediaToken, albumId);
+      }
+    );
+
+    const createdMultimedias = await Promise.all(createMultimediaPromises);
+
+    console.log("createdMultimedias", createdMultimedias);
   } catch (err: any) {
-    console.log("pelen error:", err.response.data.error);
+    console.log("pelen error:", err);
     next(new AppError(err.message, 500));
   }
 
