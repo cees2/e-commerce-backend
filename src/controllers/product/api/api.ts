@@ -1,5 +1,5 @@
 import axios from "axios";
-import FormData from "form-data"
+import FormData from "form-data";
 
 const googleApiURL = "https://photoslibrary.googleapis.com";
 
@@ -22,23 +22,39 @@ export const createGoogleApiAlbum = (
 };
 
 export const getMultimediaToken = (
-  multimedia: File[] | File
+  // multimedia: File[] | File
+  multimedia: File[]
 ): Promise<Record<string, any>> => {
-  const filesAsFormData = new FormData();
+  // const filesAsFormData = new FormData();
 
-  if (Array.isArray(multimedia)) {
-    multimedia.forEach((singleMultimedia, index) => {
-      filesAsFormData.append(index.toString(), JSON.stringify(singleMultimedia));
-    });
-  } else {
-    filesAsFormData.append("krzeslo", JSON.stringify(multimedia));
-  }
-  return axios.post(`${googleApiURL}/v1/uploads`, filesAsFormData, {
-    headers: {
-      Authorization: `Bearer ${process.env.GOOGLE_CREATE_MULTIMEDIA_TOKEN}`,
-      "Conent-Type": "application/octet-stream",
-    },
-  });
+  // if (Array.isArray(multimedia)) {
+  //   multimedia.forEach((singleMultimedia, index) => {
+  //     // const multimediaDotExtensionIndex =
+  //     //   singleMultimedia.originalname.lastIndexOf(".");
+  //     // const multimediaName = singleMultimedia.originalname.substring(
+  //     //   0,
+  //     //   multimediaDotExtensionIndex
+  //     // );
+
+  //     filesAsFormData.append(`file-${index}`, JSON.stringify(singleMultimedia));
+  //   });
+  // } else {
+  //   filesAsFormData.append("krzeslo", JSON.stringify(multimedia));
+  // }
+  console.log(multimedia[0]);
+  return axios.post(
+    `${googleApiURL}/v1/uploads`,
+    //@ts-ignore
+    multimedia[0].buffer,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.GOOGLE_CREATE_MULTIMEDIA_TOKEN}`,
+        "Content-Type": "application/octet-stream",
+        "X-Goog-Upload-Content-Type": "image/jpeg",
+        "X-Goog-Upload-Protocol": "raw",
+      },
+    }
+  );
 };
 
 export const createMultimedia = (uploadToken: string, albumId: string) => {
@@ -49,7 +65,7 @@ export const createMultimedia = (uploadToken: string, albumId: string) => {
         description: "test",
         simpleMediaItem: {
           uploadToken,
-          fileName: "TEST",
+          fileName: "TEST1",
         },
       },
     ],
