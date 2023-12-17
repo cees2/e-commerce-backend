@@ -129,19 +129,14 @@ export const uploadImages = async (
 
   try {
     const createdNewAlbum = await createGoogleApiAlbum(name);
-    console.log(createdNewAlbum);
     const {
       data: { id: albumId },
     } = createdNewAlbum;
-    console.log("============");
-    console.log("UTWORZONO ALBUM");
-    const { data: multimediaToken } = await getMultimediaToken(files);
-    console.log("POBRANO TOKEN MULTIMEDIOW");
+    const { data: multimediaToken } = await getMultimediaToken(files.images);
     const a = await createMultimedia(multimediaToken, albumId);
-    console.log("DODANO MULTIMEDIA");
-    console.log("TUTAJ", a.data.status);
+    console.log("A", a.data.newMediaItemResults);
   } catch (err: any) {
-    console.log("ERR", err.response.data.error);
+    console.log("pelen error:", err.response.data.error);
     next(new AppError(err.message, 500));
   }
 
