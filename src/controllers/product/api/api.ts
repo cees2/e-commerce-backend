@@ -38,15 +38,15 @@ export const getMultimediaToken = (
   );
 };
 
-export const createMultimedia = (uploadToken: string, albumId: string) => {
+export const createMultimedia = (uploadToken: string, albumId: string, fileName: string) => {
   const createMultimediaRequestBody = {
     albumId,
     newMediaItems: [
       {
-        description: "test",
+        description: "",
         simpleMediaItem: {
           uploadToken,
-          fileName: "TEST1",
+          fileName,
         },
       },
     ],

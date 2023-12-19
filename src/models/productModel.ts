@@ -25,6 +25,11 @@ const productSchema = new mongoose.Schema({
     required: [true, "Product must have price"],
     min: 0,
   },
+  albumId: {
+    type: String,
+    unique: true,
+    trim: true,
+  },
 });
 
 export const Product = mongoose.model("Product", productSchema);

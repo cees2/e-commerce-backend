@@ -96,7 +96,7 @@ export const createProduct = async (
   next: NextFunction
 ) => {
   try {
-    const { name, description, price } = request.body;
+    const { name, description, price, albumId } = request.body;
 
     const product = await Product.create({
       name,
@@ -104,6 +104,7 @@ export const createProduct = async (
       thumbnail_image: request.body.thumbnailPicture,
       description,
       price,
+      albumId,
     });
 
     if (!product) return next(new AppError("Could not create product", 409));
@@ -133,7 +134,6 @@ export const uploadImages = async (
       data: { id: albumId },
     } = createdNewAlbum;
 
-    // Pobieranie tokenow multimediow - do stworzenia nowe middleware
     const buffers = [];
 
     if (Array.isArray(files.images)) {
@@ -157,19 +157,20 @@ export const uploadImages = async (
       }
     );
 
-    // TWORZENIE MULTIMEDIOW
-
     const createMultimediaPromises = multimediaTokens.map(
-      (multimediaToken: string) => {
-        return createMultimedia(multimediaToken, albumId);
+      (multimediaToken: string, index: number) => {
+        return createMultimedia(
+          multimediaToken,
+          albumId,
+          request.body.images[index]
+        );
       }
     );
 
-    const createdMultimedias = await Promise.all(createMultimediaPromises);
+    await Promise.all(createMultimediaPromises);
 
-    console.log("createdMultimedias", createdMultimedias);
+    request.body.albumId = albumId;
   } catch (err: any) {
-    console.log("pelen error:", err);
     next(new AppError(err.message, 500));
   }
 
