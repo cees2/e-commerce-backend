@@ -96,7 +96,7 @@ export const createProduct = async (
   next: NextFunction
 ) => {
   try {
-    const { name, description, price } = request.body;
+    const { name, description, price, albumId } = request.body;
 
     const product = await Product.create({
       name,
@@ -104,6 +104,7 @@ export const createProduct = async (
       thumbnail_image: request.body.thumbnailPicture,
       description,
       price,
+      albumId,
     });
 
     if (!product) return next(new AppError("Could not create product", 409));
@@ -132,11 +133,44 @@ export const uploadImages = async (
     const {
       data: { id: albumId },
     } = createdNewAlbum;
-    const { data: multimediaToken } = await getMultimediaToken(files.images);
-    const a = await createMultimedia(multimediaToken, albumId);
-    console.log("A", a.data.newMediaItemResults);
+
+    const buffers = [];
+
+    if (Array.isArray(files.images)) {
+      files.images.forEach((singleFile: Record<string, any>) => {
+        buffers.push(singleFile.buffer);
+      });
+    } else {
+      buffers.push(files.images.buffer);
+    }
+
+    const multimediaTokensPromises = buffers.map((buffer) => {
+      return getMultimediaToken(buffer);
+    });
+
+    let multimediaTokens: Record<string, any> | string[] = await Promise.all(
+      multimediaTokensPromises
+    );
+    multimediaTokens = multimediaTokens.map(
+      (multimediaTokenObj: Record<string, any>) => {
+        return multimediaTokenObj.data;
+      }
+    );
+
+    const createMultimediaPromises = multimediaTokens.map(
+      (multimediaToken: string, index: number) => {
+        return createMultimedia(
+          multimediaToken,
+          albumId,
+          request.body.images[index]
+        );
+      }
+    );
+
+    await Promise.all(createMultimediaPromises);
+
+    request.body.albumId = albumId;
   } catch (err: any) {
-    console.log("pelen error:", err.response.data.error);
     next(new AppError(err.message, 500));
   }
 
